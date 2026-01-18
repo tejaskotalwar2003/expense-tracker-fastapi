@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expense Tracker</title>
+  <style>
+    body { font-family: Arial; margin: 30px; }
+    input, button { margin: 5px; padding: 8px; }
+    table { border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid black; padding: 8px; }
+  </style>
+</head>
+<body>
+
+<h2>Expense Tracker</h2>
+
+<h3>Add Expense</h3>
+<input id="title" placeholder="Title">
+<input id="amount" type="number" placeholder="Amount">
+<input id="category" placeholder="Category">
+<input id="date" type="date">
+<button onclick="addExpense()">Add</button>
+
+<h3>Expenses</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Amount</th>
+      <th>Category</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody id="expenseTable"></tbody>
+</table>
+
+<h3>Total Expense: ₹<span id="total">0</span></h3>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+async function addExpense() {
+  const data = {
+    title: document.getElementById("title").value,
+    amount: parseFloat(document.getElementById("amount").value),
+    category: document.getElementById("category").value,
+    date: document.getElementById("date").value
+  };
+
+  await fetch(API + "/expenses", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+
+  loadExpenses();
+}
+
+async function loadExpenses() {
+  const res = await fetch(API + "/expenses");
+  const expenses = await res.json();
+
+  const table = document.getElementById("expenseTable");
+  table.innerHTML = "";
+
+  expenses.forEach(e => {
+    table.innerHTML += `
+      <tr>
+        <td>${e.title}</td>
+        <td>${e.amount}</td>
+        <td>${e.category}</td>
+        <td>${e.date}</td>
+      </tr>
+    `;
+  });
+
+  loadTotal();
+}
+
+async function loadTotal() {
+  const res = await fetch(API + "/expenses/total");
+  const data = await res.json();
+  document.getElementById("total").innerText = data.total;
+}
+
+loadExpenses();
+</script>
+
+</body>
+</html>
